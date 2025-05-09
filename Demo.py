@@ -15,16 +15,20 @@ import datetime
 
 st.set_page_config(page_title='Demo', layout='wide')
 
-encoder_dir = 'model/encoder'
+current_dir = os.path.dirname(__file__)
+
+encoder_dir = os.path.join(current_dir, 'model/encoder')
 @st.cache_resource
 def load_model():
     model = XGBClassifier()
-    model.load_model('model/xgb_classifier.json')
+    model_xgb_classifier = os.path.join(current_dir, 'model/xgb_classifier.json')
+    model.load_model(model_xgb_classifier)
     return model
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv('data/new_retail_data.csv')
+    data_path = os.path.join(current_dir, 'data/new_retail_data.csv')
+    df = pd.read_csv(data_path)
     df['Date'] = pd.to_datetime(df['Date'])
     return df
 
@@ -436,13 +440,16 @@ st.dataframe(df_report.style.format(precision=2), use_container_width=True)
 
 _, col2, _ = st.columns(3)
 with col2:
-    st.image('image/AUC-ROC.png', caption='AUC - ROC curve')
+    image_AUC_ROC = os.path.join(current_dir, 'image/AUC-ROC.png')
+    st.image(image_AUC_ROC, caption='AUC - ROC curve')
 _, col2, _ = st.columns([1, 2, 1])
 with col2:
-    st.image('image/confusion.jpg', caption='Normalized confusion matrix')
+    image_confusion = os.path.join(current_dir, 'image/confusion.jpg')
+    st.image(image_confusion, caption='Normalized confusion matrix')
 _, col2, _ = st.columns(3)
 with col2:
-    st.image('image/importance.jpg', caption='Feature importance by built-in XGBoost function')
+    image_importance = os.path.join(current_dir, 'image/importance.png')
+    st.image(image_importance, caption='Feature importance by built-in XGBoost function')
 with st.expander('Hạn chế của cách đo feature importance này'):
     st.write('Thực ra có 3 loại feature importance: cover, gain và weight. Mỗi loại cho 1 chart khác nhau nên khó đánh giá tổng quan và cần hiểu rõ cách tính toán để biết được ý nghĩa thật sự của từng loại.')
     st.write('Các biểu đồ feature importance thường chỉ cho thấy **feature nào quan trọng hơn**, nhưng không cho biết '
@@ -486,8 +493,9 @@ with st.expander('Overview of SHAP'):
     st.write('Ý nghĩa là đo mức độ đóng góp của feature i. Ví dụ khi f(S ∪ i) = 0.8 và f(S) = 0.5 thì nghĩa là thêm feature i vào làm tăng dự đoán lên 30%. \
         Và cứ tiếp tục làm thế, duyệt qua toàn bộ tổ hợp các features và xét. Vế nhân đằng trước là cách công thức tính trung bình.')
     st.write('Nhược điểm là phải xét tổ hợp các features nên số lượng tổ hợp sinh ra sẽ lớn và tính toán mất thời gian. Đối với Deep Learning hay Tree thì có các phiên bản gần đúng như TreeSHAP,... dùng riêng để giảm thời gian và chi phí.')
-    
-with open("model/shap_values.pkl", "rb") as f:
+
+mode_shap_values = os.path.join(current_dir, 'model/shap_values.pkl')
+with open(mode_shap_values, "rb") as f:
     all_shap_values = joblib.load(f)
 
 shap_values = all_shap_values[:1000]  # chỉ lấy một phần
@@ -562,7 +570,8 @@ st.dataframe(df.sample(5))
 form = st.form(key='input_form')
 
 # Load giá trị unique
-with open("model/unique_categorical_values.json", "r", encoding="utf-8") as f:
+model_unique_categorical_values = os.path.join(current_dir, 'model/unique_categorical_values.json')
+with open(model_unique_categorical_values, "r", encoding="utf-8") as f:
     unique_values = json.load(f)
 
 inputs = {}
